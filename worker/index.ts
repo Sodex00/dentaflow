@@ -7,6 +7,7 @@ interface Env {
   DB: D1Database;
   TELEGRAM_BOT_TOKEN?: string;
   ADMIN_USERNAMES?: string;
+  DEMO_MODE?: string;
   IMAGES: {
     input(stream: ReadableStream): {
       transform(options: Record<string, unknown>): {
