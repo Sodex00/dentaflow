@@ -1,98 +1,92 @@
-# vinext-starter
+# DentaFlow
 
-A clean full-stack starter running on
-[vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and
-Drizzle support.
+Портфолио-проект цифровой стоматологии: светлый имиджевый лендинг, интерактивная WebGL-сцена и Telegram Mini App для обработки заявок.
 
-## Prerequisites
+![DentaFlow social preview](public/og.png)
 
-- Node.js `>=22.13.0`
+## Концепция
 
-## Quick Start
+DentaFlow объединяет ощущение современной клиники и спокойного digital-сервиса. Визуальный язык построен на клиническом белом, холодной мяте, глубоком зелёном и редакционной типографике. Вместо типовой фотографии врача в первом экране используется интерактивный WebGL-объект «цифровая эмаль».
+
+## Возможности
+
+- адаптивный лендинг стоматологии;
+- интерактивная WebGL-сцена без тяжёлой 3D-библиотеки;
+- форма записи с валидацией и сохранением в Cloudflare D1;
+- Telegram Mini App с разделами «Новые» и «Принятые»;
+- принятие заявки и назначение времени визита;
+- доступ администраторов по списку Telegram `@username`;
+- серверная проверка подписи Telegram `initData`;
+- локальный Telegram-бот через long polling для portfolio-demo;
+- Telegram webhook для опубликованной версии.
+
+## Стек
+
+`React 19` · `TypeScript` · `Node.js` · `Vinext / Next App Router` · `Cloudflare Workers` · `D1` · `WebGL` · `Telegram Bot API`
+
+## Локальный запуск
+
+Требуется Node.js `22.13+`.
 
 ```bash
 npm install
+cp .env.example .env.local
 npm run dev
+```
+
+- Лендинг: `http://localhost:3000`
+- Админка: `http://localhost:3000/admin`
+
+### Telegram-бот для разработки
+
+Заполните `.env.local`, затем в отдельном терминале запустите:
+
+```bash
+npm run bot:dev
+```
+
+Для запуска Mini App внутри Telegram значение `MINI_APP_URL` должно быть публичным HTTPS-адресом. Локальный polling-процесс не требует webhook.
+
+## Переменные окружения
+
+```env
+TELEGRAM_BOT_TOKEN=token_from_botfather
+TELEGRAM_WEBHOOK_SECRET=random_secret
+ADMIN_USERNAMES=@admin_one,@admin_two
+DEMO_MODE=false
+MINI_APP_URL=https://your-public-url/admin
+```
+
+Не добавляйте `.env.local` и токен бота в Git.
+
+## GitHub Codespaces
+
+1. Создайте Codespace из репозитория.
+2. Запустите `npm run dev`.
+3. Во вкладке **Ports** переключите порт `3000` в режим **Public**.
+4. Используйте выданный адрес `https://…-3000.app.github.dev/admin` как `MINI_APP_URL`.
+
+Codespaces подходит для временной демонстрации: остановленный Codespace перестаёт обслуживать Mini App.
+
+## Проверка сборки
+
+```bash
 npm run build
 ```
 
-This starter does not use `wrangler.jsonc`.
+## Структура
 
-## Included Shape
-
-- edit site code under `app/`
-- `.openai/hosting.json` declares optional Sites D1 and R2 bindings
-- `vite.config.ts` simulates declared bindings for local development
-- `db/schema.ts` starts intentionally empty
-- `examples/d1/` contains an optional D1 example surface
-- `drizzle.config.ts` supports local migration generation when needed
-
-## Workspace Auth Headers
-
-OpenAI workspace sites can read the current user's email from
-`oai-authenticated-user-email`.
-
-SIWC-authenticated workspace sites may also receive
-`oai-authenticated-user-full-name` when the user's SIWC profile has a non-empty
-`name` claim. The full-name value is percent-encoded UTF-8 and is accompanied by
-`oai-authenticated-user-full-name-encoding: percent-encoded-utf-8`.
-
-Treat the full name as optional and fall back to email when it is absent:
-
-```tsx
-import { headers } from "next/headers";
-
-export default async function Home() {
-  const requestHeaders = await headers();
-  const email = requestHeaders.get("oai-authenticated-user-email");
-  const encodedFullName = requestHeaders.get("oai-authenticated-user-full-name");
-  const fullName =
-    encodedFullName &&
-    requestHeaders.get("oai-authenticated-user-full-name-encoding") ===
-      "percent-encoded-utf-8"
-      ? decodeURIComponent(encodedFullName)
-      : null;
-
-  const displayName = fullName ?? email;
-  // ...
-}
+```text
+app/
+  admin/                 Telegram Mini App UI
+  api/requests/          публичная форма заявки
+  api/admin/requests/    защищённый CRM API
+  api/telegram/webhook/  webhook Telegram-бота
+  components/ToothScene WebGL-сцена
+db/                      схема D1
+scripts/                 локальный polling-бот
 ```
 
-## Optional Dispatch-Owned ChatGPT Sign-In
+---
 
-Import the ready-to-use helpers from `app/chatgpt-auth.ts` when the site needs
-optional or required ChatGPT sign-in:
-
-- Use `getChatGPTUser()` for optional signed-in UI.
-- Use `requireChatGPTUser(returnTo)` for server-rendered pages that should send
-  anonymous visitors through Sign in with ChatGPT.
-- Use `chatGPTSignInPath(returnTo)` and `chatGPTSignOutPath(returnTo)` for
-  browser links or actions.
-- Pass a same-origin relative `returnTo` path for the destination after sign-in
-  or sign-out. The helper validates and safely encodes it.
-- Mark protected pages with `export const dynamic = "force-dynamic"` because
-  they depend on per-request identity headers.
-
-Dispatch owns `/signin-with-chatgpt`, `/signout-with-chatgpt`, `/callback`, the
-OAuth cookies, and identity header injection. Do not implement app routes for
-those reserved paths. Routes that do not import and call the helper remain
-anonymous-compatible.
-
-SIWC establishes identity only; it does not prove workspace membership. Use the
-Sites hosting platform's access policy controls for workspace-wide restrictions,
-or enforce explicit server-side membership or allowlist checks.
-
-Use SIWC for account pages, user-specific dashboards, saved records, and write
-actions tied to the current ChatGPT user. Leave public content anonymous.
-
-## Useful Commands
-
-- `npm run dev`: start local development
-- `npm run build`: verify the vinext build output
-- `npm test`: build the starter and verify its rendered loading skeleton
-- `npm run db:generate`: generate Drizzle migrations after schema changes
-
-## Learn More
-
-- [vinext Documentation](https://github.com/cloudflare/vinext)
-- [Drizzle D1 Guide](https://orm.drizzle.team/docs/get-started/d1-new)
+Designed and developed as a portfolio case study.
