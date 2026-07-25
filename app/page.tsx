@@ -18,7 +18,8 @@ export default function Home() {
 
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const form = new FormData(e.currentTarget);
+    const formElement = e.currentTarget;
+    const form = new FormData(formElement);
     setLoading(true);
     try {
       const response = await fetch(`${apiBase}/api/requests`, {
@@ -28,7 +29,7 @@ export default function Home() {
       });
       if (!response.ok) throw new Error();
       setSent(true);
-      e.currentTarget.reset();
+      formElement.reset();
     } catch {
       alert("Не удалось отправить заявку. Позвоните нам: +7 423 201-20-20");
     } finally { setLoading(false); }
