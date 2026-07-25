@@ -3,6 +3,8 @@
 import { FormEvent, useState } from "react";
 import { ToothScene } from "./components/ToothScene";
 
+const apiBase = (import.meta.env?.VITE_API_BASE || "").replace(/\/$/, "");
+
 const services = [
   { n: "01", title: "Диагностика", text: "Цифровой план лечения без лишних назначений", price: "от 1 500 ₽" },
   { n: "02", title: "Эстетика", text: "Виниры и реставрации с естественной анатомией", price: "от 12 000 ₽" },
@@ -19,7 +21,7 @@ export default function Home() {
     const form = new FormData(e.currentTarget);
     setLoading(true);
     try {
-      const response = await fetch("/api/requests", {
+      const response = await fetch(`${apiBase}/api/requests`, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ name: form.get("name"), phone: form.get("phone"), service: form.get("service") }),
@@ -81,7 +83,7 @@ export default function Home() {
         </form>
       </section>
 
-      <footer id="contact"><div className="wrap footerTop"><a className="brand inverse" href="#top"><span>D</span>DentaFlow</a><h2>Улыбайтесь.<br /><em>Остальное — наше.</em></h2></div><div className="wrap footerBottom"><span>© 2026 DentaFlow</span><a href="tel:+74232012020">+7 423 201-20-20</a><a href="/admin">Telegram Admin Demo ↗</a></div></footer>
+      <footer id="contact"><div className="wrap footerTop"><a className="brand inverse" href="#top"><span>D</span>DentaFlow</a><h2>Улыбайтесь.<br /><em>Остальное — наше.</em></h2></div><div className="wrap footerBottom"><span>© 2026 DentaFlow</span><a href="tel:+74232012020">+7 423 201-20-20</a><a href="./admin">Панель администратора ↗</a></div></footer>
     </main>
   );
 }
